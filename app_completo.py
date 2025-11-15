@@ -1,5 +1,5 @@
 """
-Regeneration Credit AI Assistant - Interface Streamlit
+Regeneration Credit AI Assistant - Interface Streamlit (Versão Enxuta)
 """
 import sys
 from pathlib import Path
@@ -13,13 +13,11 @@ import streamlit as st
 from datetime import datetime
 import json
 import logging
-import pandas as pd
 import uuid
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 
 from agents.main_agent import RegenerationCreditAgent
 from config.settings import settings, CONVERSATIONS_DIR
-from utils.pricing import formatar_custo, formatar_tokens
 
 # Configurar logging
 logging.basicConfig(
@@ -46,17 +44,6 @@ st.markdown("""
     /* Ajustes para tema escuro */
     [data-testid="stAppViewContainer"] {
         background-color: #0e1117;
-    }
-    
-    /* Aumentar fonte das tabs do CONTEÚDO PRINCIPAL */
-    section[data-testid="stMain"] button[data-baseweb="tab"] {
-        font-size: 1.5rem !important;
-        font-weight: 500 !important;
-    }
-    
-    section[data-testid="stMain"] button[data-baseweb="tab"] > div p {
-        font-size: 1.5rem !important;
-        font-weight: 500 !important;
     }
     
     /* Título principal */
@@ -359,7 +346,7 @@ def save_conversation():
             "metadata": {
                 "model": settings.llm_model,
                 "rag_enabled": True,
-                "app_version": "1.0.0-beta",
+                "app_version": "1.0.0-beta-enxuto",
                 "top_k_results": settings.top_k_results
             }
         }
@@ -538,10 +525,10 @@ def render_sidebar():
             """)
 
 
-# ==================== FUNÇÕES DAS ABAS ====================
+# ==================== ÁREA PRINCIPAL - CHAT ====================
 
-def render_tab_chat(agent):
-    """Renderiza a aba principal de Chat"""
+def render_chat(agent):
+    """Renderiza o chat principal"""
     
     # Exibir mensagem de boas-vindas se não houver histórico
     if not st.session_state.messages:
@@ -662,262 +649,8 @@ def render_tab_chat(agent):
                 st.error(f"Erro ao processar mensagem: {str(e)}")
 
 
-def render_tab_prompts(agent):
-    """Renderiza a aba de Prompts"""
-    st.subheader("Prompts do Sistema")
-    st.caption("Referência dos prompts usados pelo assistente (atualizado em tempo real)")
-    
-    with st.expander("System Prompt do Agente", expanded=True):
-        # Busca o prompt diretamente do agente (sempre atualizado)
-        system_prompt = agent._get_system_prompt()
-        st.code(system_prompt, language="markdown")
-        st.download_button(
-            label="Baixar system_prompt.txt",
-            data=system_prompt,
-            file_name="system_prompt_regeneration_credit.txt",
-            mime="text/plain",
-        )
-    
-    st.markdown("---")
-    st.info("Este prompt define o comportamento e estilo do assistente, incluindo regras de resposta, uso de ferramentas e limitações.")
-
-
-def render_tab_retriever_debug():
-    """Renderiza a aba de Retriever Debug"""
-    st.subheader("Retriever Debug - Histórico de Buscas")
-    st.caption("Visualização detalhada de todas as buscas realizadas no vector store")
-    
-    retriever_audits = st.session_state.retriever_audits
-    
-    if not retriever_audits:
-        st.info("Nenhuma busca no retriever foi realizada ainda. Faça uma pergunta na aba 'Chat' para ver o debug aqui.")
-    else:
-        st.success(f"Total de buscas: **{len(retriever_audits)}**")
-        st.markdown("---")
-        
-        # Renderiza cada busca
-        for idx, audit in enumerate(retriever_audits, 1):
-            tool_name = audit.get("tool_name", "search")
-            query = audit.get("query", "")
-            num_results = audit.get("num_results", 0)
-            elapsed_seconds = audit.get("elapsed_seconds", 0.0)
-            filters = audit.get("filter", {})  # Corrigido: 'filter' não 'filters'
-            metadata_summary = audit.get("metadata_summary", {})
-            chunks = audit.get("chunks", [])
-            
-            # Header do card
-            st.info(f"**Busca #{idx}** - Ferramenta: `{tool_name}`")
-            
-            with st.container(border=True):
-                # Query
-                st.markdown("**Query:**")
-                st.code(query[:300] + ("..." if len(query) > 300 else ""), language="text")
-                
-                # Métricas
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Resultados", num_results)
-                with col2:
-                    st.metric("Tempo", f"{elapsed_seconds:.2f}s")
-                with col3:
-                    st.metric("Filtros", len(filters) if filters else 0)
-                
-                # Filtros aplicados
-                if filters:
-                    st.markdown("**Filtros aplicados:**")
-                    for key, value in filters.items():
-                        st.caption(f"• {key}: {value}")
-                
-                # Resumo dos metadados encontrados
-                if metadata_summary:
-                    st.markdown("**Resumo dos metadados:**")
-                    for key, values in metadata_summary.items():
-                        if values:
-                            # Verifica se values é uma lista/set antes de fazer slicing
-                            if isinstance(values, (list, set, tuple)):
-                                values_list = list(values)
-                                st.caption(f"• {key}: {', '.join(map(str, values_list[:5]))}{' ...' if len(values_list) > 5 else ''}")
-                            else:
-                                # Se for um valor único (float, int, str), exibe diretamente
-                                st.caption(f"• {key}: {values}")
-            
-            # Chunks retornados (NOVO - com conteúdo completo e metadados)
-            if chunks:
-                st.markdown("---")
-                st.success(f"**Chunks Retornados** ({len(chunks)} chunk{'s' if len(chunks) > 1 else ''})")
-                
-                for chunk in chunks:
-                    chunk_idx = chunk.get("index", 0)
-                    score = chunk.get("score", 0.0)
-                    content = chunk.get("content", "")
-                    metadata = chunk.get("metadata", {})
-                    
-                    # Metadados principais para o header
-                    source = metadata.get("source", "unknown")
-                    source_type = metadata.get("source_type", "unknown")
-                    
-                    # Expander para cada chunk
-                    with st.expander(f"**Chunk {chunk_idx}** | Score: {score:.4f} | {source_type} | {source}"):
-                        # Metadados completos
-                        st.markdown("**Metadados:**")
-                        metadata_cols = st.columns(2)
-                        
-                        for i, (key, value) in enumerate(metadata.items()):
-                            with metadata_cols[i % 2]:
-                                st.caption(f"**{key}:** {value}")
-                        
-                        st.markdown("---")
-                        
-                        # Conteúdo completo
-                        st.markdown("**Conteúdo:**")
-                        st.code(content, language="text")
-            
-            # Separador entre buscas
-            if idx < len(retriever_audits):
-                st.markdown("<div style='text-align: center; color: #888; margin: 2rem 0;'>⬇️ ⬇️ ⬇️</div>", unsafe_allow_html=True)
-
-
-def render_tab_tokens():
-    """Renderiza a aba de Tokens e Custos"""
-    st.subheader("Uso de Tokens e Custos")
-    st.caption("Rastreamento completo de tokens e custos por turno")
-    
-    tokens_history = st.session_state.tokens_history
-    
-    if not tokens_history:
-        st.info("Nenhum dado de tokens disponível ainda. Faça uma pergunta na aba 'Chat' para ver as métricas aqui.")
-    else:
-        # Calcula totais acumulados
-        total_tokens_geral = sum(t.get("total_tokens", 0) for t in tokens_history)
-        total_custo_geral = sum(t.get("total_custo", 0.0) for t in tokens_history)
-        total_chamadas_geral = sum(t.get("stats", {}).get("total_chamadas_llm", 0) for t in tokens_history)
-        custo_medio_turno = total_custo_geral / len(tokens_history) if len(tokens_history) > 0 else 0.0
-        
-        # Resumo financeiro
-        st.markdown("### Resumo Financeiro (Toda a Conversa)")
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Total Tokens", formatar_tokens(total_tokens_geral))
-        with col2:
-            st.metric("Total Custo", formatar_custo(total_custo_geral))
-        with col3:
-            st.metric("Total Chamadas LLM", total_chamadas_geral)
-        with col4:
-            st.metric("Custo Médio/Turno", formatar_custo(custo_medio_turno))
-        
-        st.markdown("---")
-        st.markdown("### Histórico de Turnos")
-        
-        # Renderiza cada turno
-        for idx, turno in enumerate(tokens_history):
-            turno_id = turno.get("turno_id", idx + 1)
-            timestamp = turno.get("timestamp")
-            question = turno.get("question", "")
-            total_tokens = turno.get("total_tokens", 0)
-            total_custo = turno.get("total_custo", 0.0)
-            elapsed_seconds = turno.get("elapsed_seconds", 0.0)
-            por_componente = turno.get("por_componente", {})
-            stats = turno.get("stats", {})
-            
-            # Formata timestamp
-            try:
-                if isinstance(timestamp, str):
-                    timestamp = datetime.fromisoformat(timestamp)
-                ts_str = timestamp.strftime("%d/%m %H:%M:%S")
-            except Exception:
-                ts_str = "—"
-            
-            # Trunca pergunta
-            question_preview = question[:60] + "..." if len(question) > 60 else question
-            
-            # Determina se é o último turno (expandido)
-            is_last = (idx == len(tokens_history) - 1)
-            
-            # Header do expander
-            header = f"**Turno {turno_id}** | {ts_str} | {formatar_tokens(total_tokens)} | {formatar_custo(total_custo)} — {question_preview}"
-            
-            with st.expander(header, expanded=is_last):
-                st.markdown(f"**Pergunta completa:** {question}")
-                st.markdown(f"**Tempo de resposta:** {elapsed_seconds:.2f}s")
-                st.markdown("")
-                
-                # Breakdown por componente
-                if por_componente:
-                    st.markdown("**Breakdown por Componente:**")
-                    
-                    for comp_name, comp_data in por_componente.items():
-                        chamadas = comp_data.get("chamadas", 0)
-                        tokens_comp = comp_data.get("tokens", {})
-                        custo_comp = comp_data.get("custo", 0.0)
-                        
-                        input_tk = tokens_comp.get("input", 0)
-                        output_tk = tokens_comp.get("output", 0)
-                        
-                        st.markdown(f"**{comp_name.capitalize()}** ({chamadas} chamada{'s' if chamadas > 1 else ''})")
-                        
-                        with st.container(border=True):
-                            col1, col2 = st.columns([2, 1])
-                            with col1:
-                                st.caption(f"Tokens: Input {formatar_tokens(input_tk)} | Output {formatar_tokens(output_tk)}")
-                            with col2:
-                                st.caption(f"Custo: {formatar_custo(custo_comp)}")
-                        
-                        st.markdown("")
-                
-                # Estatísticas adicionais
-                if stats:
-                    with st.expander("Ver estatísticas detalhadas"):
-                        st.json(stats)
-        
-        # Botão de download CSV
-        st.markdown("---")
-        st.markdown("### Exportar Dados")
-        
-        # Gera CSV flat
-        all_data = []
-        for turno in tokens_history:
-            turno_id = turno.get("turno_id", 0)
-            timestamp = turno.get("timestamp")
-            if isinstance(timestamp, datetime):
-                ts_str = timestamp.strftime("%Y-%m-%d %H:%M:%S")
-            elif isinstance(timestamp, str):
-                try:
-                    ts_str = datetime.fromisoformat(timestamp).strftime("%Y-%m-%d %H:%M:%S")
-                except:
-                    ts_str = timestamp
-            else:
-                ts_str = "—"
-            
-            question = turno.get("question", "")
-            total_tokens = turno.get("total_tokens", 0)
-            total_custo = turno.get("total_custo", 0.0)
-            elapsed_seconds = turno.get("elapsed_seconds", 0.0)
-            
-            all_data.append({
-                "turno": turno_id,
-                "timestamp": ts_str,
-                "question": question,
-                "total_tokens": total_tokens,
-                "total_custo": total_custo,
-                "tempo_segundos": elapsed_seconds
-            })
-        
-        if all_data:
-            df_export = pd.DataFrame(all_data)
-            csv_data = df_export.to_csv(index=False)
-            
-            st.download_button(
-                label="Baixar dados de tokens (CSV)",
-                data=csv_data,
-                file_name=f"tokens_usage_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                mime="text/csv"
-            )
-
-
-# ==================== ÁREA PRINCIPAL ====================
-
 def render_main():
-    """Renderiza área principal com sistema de tabs"""
+    """Renderiza área principal"""
     
     # Cabeçalho
     st.markdown('<h1 class="main-title">Regeneration Credit AI Assistant</h1>', unsafe_allow_html=True)
@@ -931,20 +664,8 @@ def render_main():
         st.error("Não foi possível inicializar o assistente. Recarregue a página.")
         return
     
-    # Sistema de Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["Chat", "Prompts", "Retriever Debug", "Tokens e Custos"])
-    
-    with tab1:
-        render_tab_chat(agent)
-    
-    with tab2:
-        render_tab_prompts(agent)
-    
-    with tab3:
-        render_tab_retriever_debug()
-    
-    with tab4:
-        render_tab_tokens()
+    # Renderizar chat
+    render_chat(agent)
 
 
 # ==================== MAIN ====================
