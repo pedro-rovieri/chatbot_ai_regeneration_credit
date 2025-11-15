@@ -33,7 +33,7 @@ st.set_page_config(
     page_title="Regeneration Credit AI Assistant",
     page_icon="🌱",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 
