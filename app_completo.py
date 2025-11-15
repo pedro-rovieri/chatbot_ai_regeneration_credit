@@ -486,12 +486,10 @@ def render_sidebar():
         # Informações sobre o sistema
         st.markdown("### ℹ️ Sobre")
         
-        model_name = get_model_display_name()
         st.markdown(f"""
         <div class="sidebar-info">
         <strong>🎯 Modo:</strong> Iniciante<br>
         <strong>🌐 Idioma:</strong> PT-BR<br>
-        <strong>🤖 Modelo:</strong> {model_name}<br>
         <strong>🔍 RAG:</strong> Ativo
         </div>
         """, unsafe_allow_html=True)
@@ -656,6 +654,20 @@ def render_main():
     st.markdown('<h1 class="main-title">Regeneration Credit AI Assistant</h1>', unsafe_allow_html=True)
     st.markdown('<p style="text-align: center; color: #e8e8e8; font-size: 1.8rem; margin-bottom: 0.8rem; font-weight: 400;">Tire suas dúvidas sobre o projeto em linguagem natural</p>', unsafe_allow_html=True)
     st.markdown('<div class="beta-disclaimer">⚠️ Versão Beta: Este assistente está em desenvolvimento e pode gerar informações incorretas ou incompletas. Sempre valide informações críticas consultando a documentação oficial do projeto.</div>', unsafe_allow_html=True)
+    
+    # Link para o site oficial
+    st.markdown("""
+    <div style="text-align: center; margin: 1rem auto 2rem auto; max-width: 600px;">
+        <div style="background: rgba(76, 175, 80, 0.15); padding: 1rem 1.5rem; 
+                    border-radius: 8px; border: 2px solid #4caf50;">
+            <span style="color: #e8e8e8; font-size: 1.3rem;">Site oficial do projeto: </span>
+            <a href="https://regenerationcredit.org/pt" target="_blank" 
+               style="color: #4caf50; font-size: 1.3rem; font-weight: 600; text-decoration: none;">
+                https://regenerationcredit.org/pt
+            </a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Inicializar agente
     agent = get_agent()
