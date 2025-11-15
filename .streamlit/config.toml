@@ -1,0 +1,22 @@
+# Configurações do Streamlit para Deploy na Cloud
+
+[theme]
+primaryColor = "#00B140"  # Verde da Regeneration Credit
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#262730"
+textColor = "#FAFAFA"
+font = "sans serif"
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+
+[browser]
+gatherUsageStats = false
+
+[runner]
+magicEnabled = false
+fastReruns = true
+

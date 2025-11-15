@@ -16,10 +16,8 @@ dist/
 build/
 
 # Data (gerados localmente)
-data/vector_store/
+# data/vector_store/ - agora commitado para deploy no Streamlit Cloud
 data/conversations/*.json
-*.db
-*.sqlite3
 
 # IDE
 .vscode/
@@ -40,7 +38,7 @@ Thumbs.db
 
 # Streamlit
 .streamlit/secrets.toml
-.streamlit/config.toml
+# .streamlit/config.toml pode ser commitado (apenas configurações de tema)
 
 # Jupyter (se usar)
 .ipynb_checkpoints/
