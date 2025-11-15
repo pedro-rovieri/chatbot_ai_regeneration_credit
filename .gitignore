@@ -1,0 +1,55 @@
+# Environment
+.env
+.venv
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Data (gerados localmente)
+data/vector_store/
+data/conversations/*.json
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.code-workspace
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+*.bak
+*~
+
+# Streamlit
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# Jupyter (se usar)
+.ipynb_checkpoints/
+*.ipynb
+
+# Documentos de origem (opcional - descomentar se quiser ignorar)
+# vector_database/
+
+
+
+
+

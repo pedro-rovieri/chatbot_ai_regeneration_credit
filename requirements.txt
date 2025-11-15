@@ -1,0 +1,47 @@
+# Core - Versões compatíveis
+langchain>=1.0.5
+langchain-core>=1.0.4
+langchain-classic>=1.0.0
+langchain-anthropic>=1.0.0
+langchain-community>=0.3.31
+langchain-openai>=1.0.0
+langchain-text-splitters>=1.0.0
+langgraph>=1.0.3
+python-dotenv==1.0.1
+langchain-huggingface
+langchain-chroma
+
+# LangSmith (Rastreamento)
+langsmith>=0.3.45
+
+# LLM
+anthropic>=0.72.1
+
+# Vector Store & Embeddings
+chromadb>=0.5.30  # Versão atualizada para compatibilidade com transformers>=4.50.0
+sentence-transformers==3.3.1
+
+# Document Processing
+pypdf==5.0.1
+markdown==3.7
+beautifulsoup4==4.12.3
+docling>=2.36.0
+transformers>=4.50.0  # Necessário para suporte ao modelo rt_detr_v2 usado pelo Docling
+hf_xet>=1.2.0  # Otimiza downloads de modelos do HuggingFace Hub
+
+# Streamlit UI
+streamlit
+streamlit-chat
+
+# Utilities
+pydantic==2.10.6
+pydantic-settings>=2.10.1
+tenacity==8.5.0
+tiktoken==0.8.0
+
+# Development
+pytest==8.0.0
+black==24.1.1
+flake8==7.0.0
+mypy==1.8.0
+
