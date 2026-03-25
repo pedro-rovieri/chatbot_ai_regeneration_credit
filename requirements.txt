@@ -33,6 +33,11 @@ hf_xet>=1.2.0  # Otimiza downloads de modelos do HuggingFace Hub
 streamlit
 streamlit-chat
 
+# API (FastAPI + Uvicorn)
+fastapi
+uvicorn[standard]
+websockets
+
 # Utilities
 pydantic==2.10.6
 pydantic-settings>=2.10.1
